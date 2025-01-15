@@ -21,9 +21,6 @@ class SQLAlchemyBaseRepository(IBaseRepository):
     def __init__(self, *, session: async_session = Depends()):
         self.session = session
 
-    async def set_model(self, model: MODEL) -> None:
-        self._MODEL = model
-
     async def create(self, obj: MODEL) -> MODEL:
         self.session.add(obj)
         await self.session.commit()
@@ -33,18 +30,12 @@ class SQLAlchemyBaseRepository(IBaseRepository):
         obj = self._MODEL(**data.model_dump(exclude_none=True))
         return await self.create(obj=obj)
 
-    async def object_exists_by_name(self, *, name: str) -> bool:
-        if hasattr(self._MODEL, "name"):
-            stmt = sa.select(self._MODEL).filter_by(name=name)
-            resp = await self.session.execute(stmt)
-            return resp.first() is not None
-        return False
-
-    async def get_by_id(self, *, object_id: UUID4) -> MODEL:
+    async def get_by_id(self, object_id: UUID4) -> MODEL:
         stmt = sa.select(self._MODEL).filter_by(uuid=object_id)
         resp = await self.session.execute(stmt)
-        if resp.scalar():
-            return resp.scalar()
+        result = resp.scalar()
+        if result:
+            return result
         else:
             raise ObjectDoesNotExistException(model=self._MODEL, object_id=object_id)
 
@@ -58,16 +49,3 @@ class SQLAlchemyBaseRepository(IBaseRepository):
         await self.session.commit()
 
         return result
-
-    async def delete(self, *, object_id: UUID) -> Sequence[int | UUID]:
-        stmt = sa.delete(self._MODEL)
-        stmt = stmt.where(self._MODEL.uuid == object_id).returning(self._MODEL.uuid)
-        deleted_id = (await self.session.execute(stmt)).scalars().all()
-
-        if not deleted_id:
-            raise ObjectDoesNotExistException(
-                model=self._MODEL, object_id=object_id
-            )  # noqa: E501
-
-        await self.session.commit()
-        return deleted_id

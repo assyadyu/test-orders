@@ -18,8 +18,7 @@ def async_engine(url: str) -> AsyncEngine:
         isolation_level="REPEATABLE READ",
         future=True,
         connect_args={"timeout": 60},
-        echo=settings.SQLALCHEMY_ECHO,
-        # poolclass=NullPool,  # NullPool for sqlalchemy repo tests
+        echo=False,
     )
 
 
