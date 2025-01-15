@@ -5,7 +5,6 @@ from app.db.models.base import BaseModel
 from sqlalchemy.orm import relationship
 
 
-
 class OrderModel(BaseModel):
     __tablename__ = "orders"
 
@@ -13,9 +12,9 @@ class OrderModel(BaseModel):
     status = sa.Column(sa.Enum(OrderStatus), nullable=False, default=OrderStatus.PENDING.value)
     is_deleted = sa.Column(sa.Boolean, nullable=False, default=False)
 
-    # products = relationship("ProductModel", back_populates='order', lazy='joined', uselist=False)
     products = relationship(
         "ProductModel",
         back_populates="order",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
+        lazy='selectin'
     )

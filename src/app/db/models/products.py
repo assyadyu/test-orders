@@ -8,7 +8,7 @@ from app.db.models.base import BaseModel
 class ProductModel(BaseModel):
     __tablename__ = "products"
 
-    name = sa.Column(sa.String(150), nullable=False, unique=True)
+    name = sa.Column(sa.String(150), nullable=False)
     price = sa.Column(sa.DECIMAL(10, 2), nullable=False)
     quantity = sa.Column(sa.Integer, nullable=False)
     order_uuid = sa.Column(UUID(as_uuid=True), sa.ForeignKey("orders.uuid", ondelete="CASCADE"))
