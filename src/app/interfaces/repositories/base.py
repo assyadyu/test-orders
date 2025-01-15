@@ -10,7 +10,7 @@ KEY = TypeVar("KEY")
 class IBaseRepository(ABC):
 
     @abstractmethod
-    async def create(self, *, obj: MODEL) -> MODEL:
+    async def create(self, obj: MODEL) -> MODEL:
         raise NotImplementedError
 
     @abstractmethod
@@ -18,7 +18,7 @@ class IBaseRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_by_id(self, *, object_id: UUID4) -> MODEL:
+    async def get_by_id(self, object_id: UUID4) -> MODEL:
         raise NotImplementedError
 
     @abstractmethod

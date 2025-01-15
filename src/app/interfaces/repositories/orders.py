@@ -49,7 +49,7 @@ class IOrderRepository(IBaseRepository, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def soft_delete(self, *, object_id: UUID4) -> None:
+    async def soft_delete(self, object_id: UUID4) -> None:
         """
         Sets flag is_deleted to True
         :param object_id: uuid of the order to be deleted

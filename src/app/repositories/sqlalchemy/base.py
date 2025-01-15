@@ -30,7 +30,7 @@ class SQLAlchemyBaseRepository(IBaseRepository):
         obj = self._MODEL(**data.model_dump(exclude_none=True))
         return await self.create(obj=obj)
 
-    async def get_by_id(self, *, object_id: UUID4) -> MODEL:
+    async def get_by_id(self, object_id: UUID4) -> MODEL:
         stmt = sa.select(self._MODEL).filter_by(uuid=object_id)
         resp = await self.session.execute(stmt)
         result = resp.scalar()

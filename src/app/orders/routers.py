@@ -32,6 +32,13 @@ async def update_order(
 ):
     return await service.update_order(order_uuid, request_data)
 
+@order_router.get("/{order_uuid}", response_model=OrderSchema)
+async def get_orders(
+        order_uuid: UUID,
+        service: OrderService = Depends(),
+
+):
+    return await service.get_order(order_uuid)
 
 @order_router.get("", response_model=list[OrderSchema])
 async def get_orders(

@@ -88,5 +88,5 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
         resp = await self.session.execute(stmt)
         return resp.scalars().all()
 
-    async def soft_delete(self, *, object_id: UUID4) -> None:
+    async def soft_delete(self, object_id: UUID4) -> None:
         await self.update(object_id=object_id, is_deleted=True)
