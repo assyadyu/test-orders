@@ -1,16 +1,13 @@
 from decimal import Decimal
-from itertools import product
 from typing import Sequence
 
+import sqlalchemy as sa
 from pydantic import UUID4
 from sqlalchemy import func
-from sqlalchemy.orm import joinedload
 
 from app.common import logger
-import sqlalchemy as sa
 from app.common.enums import OrderStatus
-from app.common.exceptions import ObjectDoesNotExistException
-from app.db.models import OrderModel, ProductModel
+from app.infrastructure.db.models import OrderModel, ProductModel
 from app.interfaces.repositories.orders import IOrderRepository
 from app.orders.schemas import NewOrderWithProductsSchema, UpdateOrderWithProductsSchema
 from app.repositories.sqlalchemy.base import (
