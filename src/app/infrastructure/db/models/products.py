@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 
-from app.db.models.base import BaseModel
+from app.infrastructure.db.models.base import BaseModel
 
 
 class ProductModel(BaseModel):
