@@ -25,10 +25,7 @@ from app.orders.schemas import (
 class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
     _MODEL: MODEL = OrderModel
 
-    # :param user_id: authenticated user id
-    # :param is_admin: if user is admin, all operations are available; user can access only own orders
     async def create_order_with_products(self, user: UserData, data: NewOrderWithProductsSchema) -> _MODEL:
-
         logger.info("Creating new order with products")
         obj = self._MODEL(user_id=user.user_id, customer_name=data.customer_name, status=OrderStatus.PENDING.value)
         for product in data.products:

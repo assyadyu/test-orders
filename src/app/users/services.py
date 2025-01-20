@@ -1,8 +1,9 @@
+import uuid
 from abc import ABC, abstractmethod
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends
 from httpx import AsyncClient, Response
 
 from app.common import logger, settings
@@ -10,6 +11,7 @@ from app.common.enums import UserRoleEnum
 from app.common.exceptions import AuthenticationException
 from app.common.http import http_session
 from app.common.settings import oauth2_scheme
+from app.interfaces.repositories.users import IUserRepository
 from app.orders.schemas import UserData
 from app.users.schemas import (
     LoginSchema,
@@ -18,29 +20,30 @@ from app.users.schemas import (
 )
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> TokenPayload:
-    # TODO get current user from Redis by token
-    current_user = TokenPayload(uuid="3fa85f64-5717-4562-b3fc-2c963f66afa7", username="user",
-                                role=UserRoleEnum.USER.value, is_active=True)
-    return current_user
+async def get_current_user(
+        token: Annotated[str, Depends(oauth2_scheme)],
+        repo: IUserRepository = Depends()
+) -> TokenPayload:
+    return await repo.get_by_key(token)
 
 
 async def get_current_active_user(
         current_user: Annotated[TokenPayload, Depends(get_current_user)],
 ) -> UserData:
     if not current_user.is_active:
-        # TODO change to custom exception
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise AuthenticationException(username=current_user.username)
     is_admin = current_user.role == UserRoleEnum.ADMIN.value
     return UserData(user_id=UUID(current_user.uuid), is_admin=is_admin)
 
 
 class IAuthService(ABC):
     http_client: AsyncClient
+    repo: IUserRepository
     url: str = settings.AUTH_URL
 
-    def __init__(self, http_client: http_session = Depends()):
+    def __init__(self, http_client: http_session = Depends(), repo: IUserRepository = Depends()):
         self.http_client = http_client
+        self.repo = repo
 
     @abstractmethod
     async def login_user(self, data: LoginSchema) -> TokenSchema:
@@ -64,7 +67,8 @@ class AuthService(IAuthService):
             logger.error(f'AuthService: validate_token failed: {response}')
         else:
             logger.info(f'AuthService: {response.json()}')
-            # TODO save to Redis/Cache: key - token, data - response.json()
+            await self.repo.create(TokenPayload(**response.json()), key=data.access_token)
+            await self.repo.update(uuid.uuid4(), value=TokenPayload(**response.json()))
 
     async def login_user(self, data: LoginSchema) -> TokenSchema:
         logger.info("AuthService: login_user")
@@ -73,6 +77,6 @@ class AuthService(IAuthService):
             raise AuthenticationException(username=data.username)
 
         result = TokenSchema(**response.json())
-        # TODO move to queue
+        # TODO move to queue ?
         await self.validate_token(result)
         return result

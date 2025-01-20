@@ -1,4 +1,4 @@
-from typing import Any, TypeVar
+from typing import Any, TypeVar, Union
 from uuid import UUID
 
 import sqlalchemy as sa
@@ -20,7 +20,7 @@ class SQLAlchemyBaseRepository(IBaseRepository):
     def __init__(self, *, session: async_session = Depends()):
         self.session = session
 
-    async def create(self, obj: MODEL) -> MODEL:
+    async def create(self, obj: MODEL, **kwargs) -> Union[MODEL, None]:
         self.session.add(obj)
         await self.session.commit()
         return obj

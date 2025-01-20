@@ -67,7 +67,6 @@ class OrderService(IOrderService):
 
     async def get_order(self, user: UserData, order_uuid: UUID) -> OrderSchema:
         logger.info("OrderService: get_order")
-        # TODO ADD permission check
         obj = await self.repo.get_by_id(order_uuid)
         return await OrderService.get_response_schema(obj)
 

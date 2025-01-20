@@ -17,7 +17,7 @@ class ObjectDoesNotExistException(ApplicationBaseException):
 
 class AuthenticationException(ApplicationBaseException):
     def __init__(self, username: str):
-        msg = f"User with this username {username} not found"
+        msg = f"Problem occurred during authentication - {username} not found or not active"
         super().__init__(msg)
 
 

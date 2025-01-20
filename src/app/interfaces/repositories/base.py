@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from typing import Any, TypeVar
+from typing import Any, TypeVar, Union
 
 from uuid import UUID
 
@@ -10,7 +10,7 @@ KEY = TypeVar("KEY")
 class IBaseRepository(ABC):
 
     @abstractmethod
-    async def create(self, obj: MODEL) -> MODEL:
+    async def create(self, obj: MODEL, **kwargs) -> Union[MODEL, None]:
         raise NotImplementedError
 
     @abstractmethod

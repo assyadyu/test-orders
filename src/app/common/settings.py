@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str = environ.get("SECRET_KEY", default="")
     AUTH_URL: str = environ.get("AUTH_URL", default="")
 
+    REDIS_HOST: str = environ.get("REDIS_HOST", default="")
+    REDIS_PORT: str = environ.get("REDIS_PORT", default="")
+
     @property
     def db_url(self):
         url = "postgresql+asyncpg://{}:{}@{}:{}/{}".format(
