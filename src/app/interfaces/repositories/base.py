@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from typing import Any, TypeVar
 
-from pydantic import BaseModel, UUID4
+from uuid import UUID
 
 MODEL = TypeVar("MODEL")
 KEY = TypeVar("KEY")
@@ -14,13 +14,9 @@ class IBaseRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def create_from_data(self, data: BaseModel) -> MODEL:
+    async def get_by_id(self, object_id: UUID) -> MODEL:
         raise NotImplementedError
 
     @abstractmethod
-    async def get_by_id(self, object_id: UUID4) -> MODEL:
-        raise NotImplementedError
-
-    @abstractmethod
-    async def update(self, *, object_id: UUID4, **values: Any) -> MODEL:
+    async def update(self, object_id: UUID, **values: Any) -> MODEL:
         raise NotImplementedError

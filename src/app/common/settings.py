@@ -1,5 +1,6 @@
 from os import environ
 
+from fastapi.security import OAuth2PasswordBearer
 from pydantic_settings import BaseSettings
 
 
@@ -13,6 +14,7 @@ class Settings(BaseSettings):
     PG_PORT: str = environ.get("POSTGRES_PORT", default="")
 
     SECRET_KEY: str = environ.get("SECRET_KEY", default="")
+    AUTH_URL: str = environ.get("AUTH_URL", default="")
 
     @property
     def db_url(self):
@@ -27,3 +29,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings(_env_file=".env", _env_file_encoding="utf-8")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")

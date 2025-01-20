@@ -1,4 +1,4 @@
-from app.repositories.sqlalchemy.orders import OrderRepository
+from app.infrastructure.repositories.sqlalchemy.orders import OrderRepository
 
 __all__ = [
     "OrderRepository",

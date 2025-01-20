@@ -27,6 +27,7 @@ class OrderSchema(BaseSchema):
     uuid: UUID
     status: OrderStatus
     customer_name: str
+    user_id: UUID
     products: Optional[list[ProductSchema]]
 
     @computed_field
@@ -46,3 +47,8 @@ class OrderFilterSchema(BaseSchema):
     max_price: Optional[Decimal] = None
     min_total: Optional[Decimal] = None
     max_total: Optional[Decimal] = None
+
+
+class UserData(BaseSchema):
+    user_id: UUID
+    is_admin: bool
