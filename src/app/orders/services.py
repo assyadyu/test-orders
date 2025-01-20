@@ -3,7 +3,10 @@ from uuid import UUID
 
 from fastapi import Depends
 
-from app.common import logger
+from app.common import (
+    logger,
+    order_logger,
+)
 from app.infrastructure.db.models import OrderModel
 from app.interfaces.repositories import IOrderRepository
 from app.orders.schemas import (
@@ -57,21 +60,25 @@ class OrderService(IOrderService):
 
     async def create_order(self, user: UserData, data: NewOrderWithProductsSchema) -> OrderSchema:
         logger.info("OrderService: create_order")
+        order_logger.info(f"create_order: {user}, data: {data}")
         new_object = await self.repo.create_order_with_products(user, data)
         return await OrderService.get_response_schema(new_object)
 
     async def update_order(self, user: UserData, order_uuid: UUID, data: UpdateOrderWithProductsSchema) -> OrderSchema:
         logger.info("OrderService: update_order")
+        order_logger.info(f"update_order: {user}, order_uuid {order_uuid } data: {data}")
         upd_object = await self.repo.update_order_with_products(object_id=order_uuid, data=data, user=user)
         return await OrderService.get_response_schema(upd_object)
 
     async def get_order(self, user: UserData, order_uuid: UUID) -> OrderSchema:
         logger.info("OrderService: get_order")
+        order_logger.info(f"get_order: {user}, order_uuid: {order_uuid}")
         obj = await self.repo.get_by_id(order_uuid)
         return await OrderService.get_response_schema(obj)
 
     async def filter_orders(self, user: UserData, filters: OrderFilterSchema) -> list[OrderSchema]:
         logger.info("OrderService: filter_orders")
+        order_logger.info(f"filter_orders: {user}, filters: {filters}")
         objects = await self.repo.filter_orders(
             limit=filters.limit, offset=filters.offset,
             status=filters.status,
@@ -86,4 +93,5 @@ class OrderService(IOrderService):
 
     async def delete_order(self, user: TokenPayload, order_uuid: UUID):
         logger.info("OrderService: delete_order")
+        order_logger.info(f"delete_order: {user}, order_uuid: {order_uuid}")
         await self.repo.soft_delete(object_id=order_uuid, user=user)

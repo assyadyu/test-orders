@@ -3,10 +3,9 @@ from typing import Sequence
 from uuid import UUID
 
 import sqlalchemy as sa
-from pydantic import UUID4
 from sqlalchemy import func
 
-from app.common import logger
+from app.common import logger, order_logger
 from app.common.enums import OrderStatus
 from app.common.exceptions import NoPermissionException
 from app.infrastructure.db.models import OrderModel, ProductModel
@@ -26,7 +25,7 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
     _MODEL: MODEL = OrderModel
 
     async def create_order_with_products(self, user: UserData, data: NewOrderWithProductsSchema) -> _MODEL:
-        logger.info("Creating new order with products")
+        logger.info("OrderRepository: Creating new order with products")
         obj = self._MODEL(user_id=user.user_id, customer_name=data.customer_name, status=OrderStatus.PENDING.value)
         for product in data.products:
             nested_obj = ProductModel(
@@ -44,9 +43,10 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
             data: UpdateOrderWithProductsSchema,
             user: UserData,
     ) -> _MODEL:
-        logger.info("Updating existing order with products")
+        logger.info("OrderRepository: Updating existing order with products")
         upd_object = await self.get_by_id(object_id=object_id)
         if not user.is_admin and upd_object.user_id != user.user_id:
+            order_logger.info(f"update_order_with_products: NoPermissionException {user} object_id {object_id}")
             raise NoPermissionException(object_id)
 
         upd_object.customer_name = data.customer_name
@@ -74,7 +74,7 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
             max_total: Decimal,
             user: UserData,
     ) -> Sequence[_MODEL]:
-        logger.info("Filtering orders")
+        logger.info("OrderRepository: Filtering orders")
 
         stmt = sa.select(
             OrderModel,
@@ -104,9 +104,10 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
         resp = await self.session.execute(stmt)
         return resp.scalars().all()
 
-    async def soft_delete(self, object_id: UUID4, user: UserData) -> None:
-        logger.info("Changing flag of the order is_deleted to True")
+    async def soft_delete(self, object_id: UUID, user: UserData) -> None:
+        logger.info("OrderRepository: Changing flag of the order is_deleted to True")
         obj = await self.get_by_id(object_id=object_id)
         if not user.is_admin and obj.user_id != user.user_id:
+            order_logger.info(f"update_order_with_products: NoPermissionException {user} object_id {object_id}")
             raise NoPermissionException(object_id)
         await self.update(object_id=object_id, is_deleted=True)
