@@ -2,7 +2,7 @@ import fastapi as fa
 
 from app.common import settings
 from app.common.dependencies import bind_dependencies
-from app.common.exceptions import register_exception_handler
+from app.common.exceptions.register import register_exception_handler
 from app.common.routers import bind_routers
 
 

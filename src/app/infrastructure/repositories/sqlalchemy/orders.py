@@ -1,30 +1,33 @@
 from decimal import Decimal
-from itertools import product
 from typing import Sequence
+from uuid import UUID
 
+import sqlalchemy as sa
 from pydantic import UUID4
 from sqlalchemy import func
-from sqlalchemy.orm import joinedload
 
 from app.common import logger
-import sqlalchemy as sa
 from app.common.enums import OrderStatus
-from app.common.exceptions import ObjectDoesNotExistException
-from app.db.models import OrderModel, ProductModel
-from app.interfaces.repositories.orders import IOrderRepository
-from app.orders.schemas import NewOrderWithProductsSchema, UpdateOrderWithProductsSchema
-from app.repositories.sqlalchemy.base import (
+from app.common.exceptions import NoPermissionException
+from app.infrastructure.db.models import OrderModel, ProductModel
+from app.infrastructure.repositories.sqlalchemy.base import (
     SQLAlchemyBaseRepository,
     MODEL,
+)
+from app.interfaces.repositories.orders import IOrderRepository
+from app.orders.schemas import (
+    NewOrderWithProductsSchema,
+    UpdateOrderWithProductsSchema,
+    UserData,
 )
 
 
 class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
     _MODEL: MODEL = OrderModel
 
-    async def create_order_with_products(self, data: NewOrderWithProductsSchema) -> _MODEL:
+    async def create_order_with_products(self, user: UserData, data: NewOrderWithProductsSchema) -> _MODEL:
         logger.info("Creating new order with products")
-        obj = self._MODEL(customer_name=data.customer_name, status=OrderStatus.PENDING.value)
+        obj = self._MODEL(user_id=user.user_id, customer_name=data.customer_name, status=OrderStatus.PENDING.value)
         for product in data.products:
             nested_obj = ProductModel(
                 name=product.name,
@@ -35,9 +38,17 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
         await self.create(obj)
         return obj
 
-    async def update_order_with_products(self, object_id: UUID4, data: UpdateOrderWithProductsSchema) -> _MODEL:
+    async def update_order_with_products(
+            self,
+            object_id: UUID,
+            data: UpdateOrderWithProductsSchema,
+            user: UserData,
+    ) -> _MODEL:
         logger.info("Updating existing order with products")
         upd_object = await self.get_by_id(object_id=object_id)
+        if not user.is_admin and upd_object.user_id != user.user_id:
+            raise NoPermissionException(object_id)
+
         upd_object.customer_name = data.customer_name
         upd_object.status = data.status
         new_products = []
@@ -61,6 +72,7 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
             max_price: Decimal,
             min_total: Decimal,
             max_total: Decimal,
+            user: UserData,
     ) -> Sequence[_MODEL]:
         logger.info("Filtering orders")
 
@@ -72,6 +84,10 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
             OrderModel.status == status,
             OrderModel.is_deleted == False
         )
+        if not user.is_admin:
+            stmt = stmt.where(
+                OrderModel.user_id == user.user_id
+            )
         if min_price and max_price:
             stmt = stmt.where(
                 ProductModel.price >= min_price,
@@ -88,5 +104,9 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
         resp = await self.session.execute(stmt)
         return resp.scalars().all()
 
-    async def soft_delete(self, object_id: UUID4) -> None:
+    async def soft_delete(self, object_id: UUID4, user: UserData) -> None:
+        logger.info("Changing flag of the order is_deleted to True")
+        obj = await self.get_by_id(object_id=object_id)
+        if not user.is_admin and obj.user_id != user.user_id:
+            raise NoPermissionException(object_id)
         await self.update(object_id=object_id, is_deleted=True)

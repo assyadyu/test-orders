@@ -4,7 +4,7 @@ from uuid import uuid4
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql.base import UUID
 
-from app.db.config import Base
+from app.infrastructure.db.config import Base
 
 
 class UUIDMixin(Base):
