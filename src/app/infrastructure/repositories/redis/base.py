@@ -41,7 +41,6 @@ class RedisBaseRepository(IRedisBaseRepository):
             await self.r.set(key, value=value)
 
     async def get(self, key) -> MODEL:
-        print(key)
         data = await self.r.get(key)
         if data:
             return pickle.loads(data)

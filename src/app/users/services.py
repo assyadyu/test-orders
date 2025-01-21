@@ -24,7 +24,7 @@ async def get_current_user(
         token: Annotated[str, Depends(oauth2_scheme)],
         repo: IUserRepository = Depends()
 ) -> TokenPayload:
-    return await repo.get_by_key(token)
+    return await repo.get(token)
 
 
 async def get_current_active_user(
@@ -68,7 +68,6 @@ class AuthService(IAuthService):
         else:
             logger.info(f'AuthService: {response.json()}')
             await self.repo.create(TokenPayload(**response.json()), key=data.access_token)
-            await self.repo.update(uuid.uuid4(), value=TokenPayload(**response.json()))
 
     async def login_user(self, data: LoginSchema) -> TokenSchema:
         logger.info("AuthService: login_user")
