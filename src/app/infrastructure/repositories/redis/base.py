@@ -5,19 +5,16 @@ from typing import Any, TypeVar, Union
 from uuid import UUID
 
 from fastapi import Depends
-from redis import asyncio as aioredis
-
-from app.common import settings
 from app.common.exceptions import ObjectDoesNotExistException
 from app.infrastructure.db.sessions import async_session
 from app.interfaces.repositories.base import IBaseRepository
+from app.common.redis import r
 
 MODEL = TypeVar("MODEL")
 KEY = TypeVar("KEY")
 
 
 class IRedisBaseRepository(IBaseRepository, ABC):
-    r = aioredis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT)
 
     @abstractmethod
     async def set(self, key, value, exp_minutes: int = None) -> None:
@@ -34,14 +31,14 @@ class RedisBaseRepository(IRedisBaseRepository):
     def __init__(self, *, session: async_session = Depends()):
         self.session = session
 
-    async def set(self, key, value, exp_minutes: int = None) -> None:
+    async def set(self, key, obj, exp_minutes: int = None) -> None:
         if exp_minutes:
-            await self.r.setex(key, timedelta(minutes=exp_minutes), value=value)
+            await r.setex(key, timedelta(minutes=exp_minutes), value=pickle.dumps(obj))
         else:
-            await self.r.set(key, value=value)
+            await r.set(key, value=pickle.dumps(obj))
 
     async def get(self, key) -> MODEL:
-        data = await self.r.get(key)
+        data = await r.get(key)
         if data:
             return pickle.loads(data)
 
@@ -53,9 +50,9 @@ class RedisBaseRepository(IRedisBaseRepository):
         :return:
         """
         if "exp" in kwargs:
-            await self.set(kwargs["key"], pickle.dumps(obj), kwargs["exp"])
+            await self.set(kwargs["key"], obj, kwargs["exp"])
         else:
-            await self.set(kwargs["key"], pickle.dumps(obj))
+            await self.set(kwargs["key"], obj)
 
     async def get_by_id(self, object_id: UUID) -> MODEL:
         data = await self.get(str(object_id))
