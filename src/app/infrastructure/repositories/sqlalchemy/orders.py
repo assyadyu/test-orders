@@ -5,10 +5,19 @@ from uuid import UUID
 import sqlalchemy as sa
 from sqlalchemy import func
 
-from app.common import logger, order_logger
+from app.common import (
+    logger,
+    order_logger,
+)
 from app.common.enums import OrderStatus
-from app.common.exceptions import NoPermissionException, ObjectDoesNotExistException
-from app.infrastructure.db.models import OrderModel, ProductModel
+from app.common.exceptions import (
+    NoPermissionException,
+    ObjectDoesNotExistException,
+)
+from app.infrastructure.db.models import (
+    OrderModel,
+    ProductModel,
+)
 from app.infrastructure.repositories.sqlalchemy.base import (
     SQLAlchemyBaseRepository,
     MODEL,
