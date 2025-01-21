@@ -6,8 +6,10 @@ from fastapi import (
     Depends,
     Query,
 )
-from fastapi.responses import JSONResponse
+from starlette import status
+from starlette.responses import Response
 
+from app.orders.cache import order_cache
 from app.orders.schemas import (
     NewOrderWithProductsSchema,
     OrderSchema,
@@ -31,6 +33,7 @@ async def create_order(
 
 
 @order_router.put("/{order_uuid}", response_model=OrderSchema)
+@order_cache(exist=True)
 async def update_order(
         user: Annotated[UserData, Depends(get_current_active_user)],
         order_uuid: UUID,
@@ -41,16 +44,17 @@ async def update_order(
 
 
 @order_router.get("/{order_uuid}", response_model=OrderSchema)
-async def get_orders(
+@order_cache
+async def get_order(
         user: Annotated[UserData, Depends(get_current_active_user)],
         order_uuid: UUID,
         service: IOrderService = Depends(),
-
 ):
     return await service.get_order(user, order_uuid)
 
 
 @order_router.get("", response_model=list[OrderSchema])
+@order_cache(expiration=30)
 async def get_orders(
         user: Annotated[UserData, Depends(get_current_active_user)],
         filter_query: Annotated[OrderFilterSchema, Query()],
@@ -61,10 +65,11 @@ async def get_orders(
 
 
 @order_router.delete("/{order_uuid}")
+@order_cache(delete=True)
 async def delete_order(
         user: Annotated[UserData, Depends(get_current_active_user)],
         order_uuid: UUID,
         service: IOrderService = Depends(),
 ):
     await service.delete_order(user, order_uuid)
-    return JSONResponse(content={"message": "deleted"})
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
