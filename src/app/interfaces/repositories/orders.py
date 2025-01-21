@@ -29,6 +29,20 @@ class IOrderRepository(IBaseRepository, ABC):
         raise NotImplementedError()
 
     @abstractmethod
+    async def get_order(
+            self,
+            object_id: UUID,
+            user: UserData,
+    ) -> OrderModel:
+        """
+        Returns order by id if it was not deleted
+        :param object_id: uuid of the order to be deleted
+        :param user: authenticated user data, id and is_admin
+        :return: Order object
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     async def update_order_with_products(
             self,
             object_id: UUID,

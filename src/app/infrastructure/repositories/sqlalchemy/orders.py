@@ -5,10 +5,19 @@ from uuid import UUID
 import sqlalchemy as sa
 from sqlalchemy import func
 
-from app.common import logger, order_logger
+from app.common import (
+    logger,
+    order_logger,
+)
 from app.common.enums import OrderStatus
-from app.common.exceptions import NoPermissionException
-from app.infrastructure.db.models import OrderModel, ProductModel
+from app.common.exceptions import (
+    NoPermissionException,
+    ObjectDoesNotExistException,
+)
+from app.infrastructure.db.models import (
+    OrderModel,
+    ProductModel,
+)
 from app.infrastructure.repositories.sqlalchemy.base import (
     SQLAlchemyBaseRepository,
     MODEL,
@@ -36,6 +45,25 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
             obj.products.append(nested_obj)
         await self.create(obj)
         return obj
+
+    async def get_order(
+            self,
+            object_id: UUID,
+            user: UserData,
+    ) -> OrderModel:
+        logger.info("OrderRepository: Changing flag of the order is_deleted to True")
+        stmt = sa.select(OrderModel).join(ProductModel).where(OrderModel.is_deleted == False)
+        resp = await self.session.execute(stmt)
+        obj = resp.scalar()
+
+        if not obj:
+            raise ObjectDoesNotExistException(model=self._MODEL, object_id=object_id)
+
+        if not user.is_admin and obj.user_id != user.user_id:
+            order_logger.info(f"get_order: NoPermissionException {user} object_id {object_id}")
+            raise NoPermissionException(object_id)
+        return obj
+
 
     async def update_order_with_products(
             self,

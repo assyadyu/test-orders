@@ -73,7 +73,7 @@ class OrderService(IOrderService):
     async def get_order(self, user: UserData, order_uuid: UUID) -> OrderSchema:
         logger.info("OrderService: get_order")
         order_logger.info(f"get_order: {user}, order_uuid: {order_uuid}")
-        obj = await self.repo.get_by_id(order_uuid)
+        obj = await self.repo.get_order(order_uuid, user)
         return await OrderService.get_response_schema(obj)
 
     async def filter_orders(self, user: UserData, filters: OrderFilterSchema) -> list[OrderSchema]:
