@@ -7,7 +7,7 @@ from fastapi import (
     Query,
 )
 from starlette import status
-from starlette.responses import Response, JSONResponse
+from starlette.responses import Response
 
 from app.orders.cache import order_cache
 from app.orders.schemas import (
