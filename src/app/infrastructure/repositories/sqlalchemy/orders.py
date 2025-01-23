@@ -52,10 +52,11 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
             user: UserData,
     ) -> OrderModel:
         logger.info("OrderRepository: Get one order with permission check")
-        stmt = sa.select(OrderModel).join(ProductModel).where(OrderModel.is_deleted == False)
+        stmt = sa.select(OrderModel).join(ProductModel).where(
+            OrderModel.is_deleted == False,
+            OrderModel.uuid == object_id)
         resp = await self.session.execute(stmt)
         obj = resp.scalar()
-
         if not obj:
             raise ObjectDoesNotExistException(model=self._MODEL, object_id=object_id)
 

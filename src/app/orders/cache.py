@@ -5,7 +5,7 @@ from app.common import logger
 from app.common.redis import r as store
 
 
-def order_cache(expiration: int = None, exist: bool = False, delete: bool = False):
+def order_cache(expiration: int = None, update: bool = False, delete: bool = False):
     def wrapped(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -18,14 +18,12 @@ def order_cache(expiration: int = None, exist: bool = False, delete: bool = Fals
 
             data = await store.get(key)
             logger.info(f"Cache hit for key {key}: {"Yes" if data else "No"}")
-
-            if data is None or exist:
+            if data is None or update:
                 result = await func(*args, **kwargs)
-                if hasattr(result, "status_code") and result.status_code == 200:
-                    data = pickle.dumps(result)
-                    await store.setex(key, expiration, data) if expiration else await store.set(key, data)
+                data = pickle.dumps(result)
+                await store.setex(key, expiration, data) if expiration else await store.set(key, data)
             elif data and delete:
-                result = None
+                result = await func(*args, **kwargs)
                 await store.delete(key)
             else:
                 result = pickle.loads(data)
