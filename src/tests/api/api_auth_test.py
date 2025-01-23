@@ -12,7 +12,10 @@ from app.orders.schemas import (
     NewOrderWithProductsSchema,
     UpdateOrderWithProductsSchema,
 )
-from tests.fixtures.users import switch_to_user, switch_to_admin
+from tests.fixtures.users import (
+    switch_to_user,
+    switch_to_admin,
+)
 
 
 class TestAuthOrdersAPI:
@@ -32,12 +35,12 @@ class TestAuthOrdersAPI:
         return response.json()
 
     @staticmethod
-    @pytest_asyncio.fixture(autouse=True, scope='session')
+    @pytest_asyncio.fixture(autouse=True, scope="class", loop_scope="session")
     async def setup(test_http_client, fake_repo):
         TestAuthOrdersAPI.test_http_client = test_http_client
         TestAuthOrdersAPI.repo = fake_repo
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope="session")
     async def test_auth_create_order_fail(self):
         logger.info("test_auth_create_order_fail")
         data = NewOrderWithProductsSchema(
@@ -50,7 +53,7 @@ class TestAuthOrdersAPI:
         )
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope="session")
     async def test_auth_get_order_fail(self, auth_as_admin):
         logger.info("test_auth_update_order_fail")
         order = await self.create_new_order()
@@ -62,7 +65,7 @@ class TestAuthOrdersAPI:
         result = response.json()
         assert result["message"] == f"You don't have permission to perform this action with object id {order['uuid']}"
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope="session")
     async def test_auth_get_order_as_admin(self, auth_as_user):
         logger.info("test_auth_get_order_as_admin")
         order = await self.create_new_order()
@@ -72,7 +75,7 @@ class TestAuthOrdersAPI:
         )
         assert response.status_code == status.HTTP_200_OK
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope="session")
     async def test_auth_update_order_fail(self, auth_as_admin):
         logger.info("test_auth_update_order_fail")
         order = await self.create_new_order()
@@ -91,7 +94,7 @@ class TestAuthOrdersAPI:
         result = response.json()
         assert result["message"] == f"You don't have permission to perform this action with object id {order['uuid']}"
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope="session")
     async def test_auth_update_order_as_admin(self, auth_as_user):
         logger.info("test_auth_update_order_as_admin")
         order = await self.create_new_order()
@@ -110,7 +113,7 @@ class TestAuthOrdersAPI:
         result = response.json()
         assert result["status"] == new_status
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope="session")
     async def test_auth_delete_order_fail(self, auth_as_admin):
         logger.info("test_auth_delete_order_fail")
         order = await self.create_new_order()
@@ -122,7 +125,7 @@ class TestAuthOrdersAPI:
         result = response.json()
         assert result["message"] == f"You don't have permission to perform this action with object id {order['uuid']}"
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope="session")
     async def test_auth_delete_order_as_admin(self, auth_as_user):
         logger.info("test_auth_delete_order_as_admin")
         order = await self.create_new_order()
@@ -136,7 +139,7 @@ class TestAuthOrdersAPI:
         )
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope="session")
     async def test_auth_get_orders_only_own(self, auth_as_admin):
         logger.info("test_auth_filter_orders_own")
         await self.create_new_order()
@@ -149,7 +152,7 @@ class TestAuthOrdersAPI:
         # result = response.json()
         # assert len(result) == 1
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope="session")
     async def test_auth_get_orders_as_admin(self, auth_as_user):
         logger.info("test_auth_get_orders_as_admin")
         await self.create_new_order()

@@ -4,7 +4,7 @@ import pytest
 import pytest_asyncio
 from fastapi import status
 from httpx import AsyncClient
-import unittest.mock
+
 from app.common import logger
 from app.common.enums import OrderStatus
 from app.interfaces.repositories import IOrderRepository
@@ -12,7 +12,6 @@ from app.orders.schemas import (
     NewOrderWithProductsSchema,
     UpdateOrderWithProductsSchema,
 )
-from app.common.redis import redis
 
 
 class TestOrdersAPI:
@@ -32,14 +31,12 @@ class TestOrdersAPI:
         return response.json()
 
     @staticmethod
-    @pytest_asyncio.fixture(autouse=True, scope='class')
-    @unittest.mock.patch("app.common.redis.redis")
-    async def setup(redis, test_http_client, fake_repo):
+    @pytest_asyncio.fixture(autouse=True, scope='class', loop_scope="session")
+    async def setup(test_http_client, fake_repo):
         TestOrdersAPI.test_http_client = test_http_client
         TestOrdersAPI.repo = fake_repo
-        TestOrdersAPI.redis = redis
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope="session")
     async def test_create_order_success(self, auth_as_user):
         logger.info("test_create_order_success")
         data = NewOrderWithProductsSchema(
@@ -52,7 +49,7 @@ class TestOrdersAPI:
         )
         assert response.status_code == status.HTTP_200_OK
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope="session")
     async def test_update_order_success(self, auth_as_user):
         logger.info("test_update_order_success")
         order = await self.create_new_order()
@@ -75,7 +72,7 @@ class TestOrdersAPI:
         assert upd_order["customer_name"] == new_customer_name
         assert upd_order["status"] == new_status
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope="session")
     async def test_delete_order_success(self, auth_as_user):
         logger.info("test_delete_order_success")
         order = await self.create_new_order()
@@ -88,7 +85,7 @@ class TestOrdersAPI:
         )
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope="session")
     async def test_get_order_fail(self, auth_as_user):
         logger.info("test_get_order_fail")
         response = await self.test_http_client.get(
