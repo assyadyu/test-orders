@@ -33,7 +33,7 @@ async def create_order(
 
 
 @order_router.put("/{order_uuid}", response_model=OrderSchema)
-@order_cache(exist=True)
+@order_cache(update=True)
 async def update_order(
         user: Annotated[UserData, Depends(get_current_active_user)],
         order_uuid: UUID,
@@ -44,7 +44,7 @@ async def update_order(
 
 
 @order_router.get("/{order_uuid}", response_model=OrderSchema)
-@order_cache
+@order_cache()
 async def get_order(
         user: Annotated[UserData, Depends(get_current_active_user)],
         order_uuid: UUID,
@@ -59,7 +59,6 @@ async def get_orders(
         user: Annotated[UserData, Depends(get_current_active_user)],
         filter_query: Annotated[OrderFilterSchema, Query()],
         service: IOrderService = Depends(),
-
 ):
     return await service.filter_orders(user, filters=filter_query)
 

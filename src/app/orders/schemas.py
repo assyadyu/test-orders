@@ -14,7 +14,7 @@ from app.products.schemas import (
 
 class NewOrderWithProductsSchema(BaseSchema):
     customer_name: str
-    products: list[NewProductSchema]
+    products: Optional[list[NewProductSchema]]
 
 
 class UpdateOrderWithProductsSchema(BaseSchema):

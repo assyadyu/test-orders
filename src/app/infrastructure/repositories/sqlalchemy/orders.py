@@ -51,19 +51,19 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
             object_id: UUID,
             user: UserData,
     ) -> OrderModel:
-        logger.info("OrderRepository: Changing flag of the order is_deleted to True")
-        stmt = sa.select(OrderModel).join(ProductModel).where(OrderModel.is_deleted == False)
+        logger.info("OrderRepository: Get one order with permission check")
+        stmt = sa.select(OrderModel).join(ProductModel).where(
+            OrderModel.is_deleted == False,
+            OrderModel.uuid == object_id)
         resp = await self.session.execute(stmt)
         obj = resp.scalar()
-
         if not obj:
             raise ObjectDoesNotExistException(model=self._MODEL, object_id=object_id)
 
         if not user.is_admin and obj.user_id != user.user_id:
-            order_logger.info(f"get_order: NoPermissionException {user} object_id {object_id}")
+            order_logger.info(f"NoPermissionException {user} object_id {object_id}")
             raise NoPermissionException(object_id)
         return obj
-
 
     async def update_order_with_products(
             self,
@@ -72,10 +72,7 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
             user: UserData,
     ) -> _MODEL:
         logger.info("OrderRepository: Updating existing order with products")
-        upd_object = await self.get_by_id(object_id=object_id)
-        if not user.is_admin and upd_object.user_id != user.user_id:
-            order_logger.info(f"update_order_with_products: NoPermissionException {user} object_id {object_id}")
-            raise NoPermissionException(object_id)
+        upd_object = await self.get_order(object_id=object_id, user=user)
 
         upd_object.customer_name = data.customer_name
         upd_object.status = data.status
@@ -134,8 +131,5 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
 
     async def soft_delete(self, object_id: UUID, user: UserData) -> None:
         logger.info("OrderRepository: Changing flag of the order is_deleted to True")
-        obj = await self.get_by_id(object_id=object_id)
-        if not user.is_admin and obj.user_id != user.user_id:
-            order_logger.info(f"update_order_with_products: NoPermissionException {user} object_id {object_id}")
-            raise NoPermissionException(object_id)
+        await self.get_order(object_id=object_id, user=user)
         await self.update(object_id=object_id, is_deleted=True)

@@ -55,7 +55,7 @@ class OrderService(IOrderService):
             customer_name=obj.customer_name,
             user_id=obj.user_id,
             status=obj.status,
-            products=obj.products
+            products=obj.products if "products" in obj.__dict__ else [],
         )
 
     async def create_order(self, user: UserData, data: NewOrderWithProductsSchema) -> OrderSchema:
