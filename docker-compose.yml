@@ -10,13 +10,22 @@ x-common-variables: &common-variables
   REDIS_PORT: 6379
   REDIS_HOST: redis-service
 
+x-test-variables: &test-variables
+  POSTGRES_USER: db_user
+  POSTGRES_PASSWORD: db_pass
+  POSTGRES_DB: orders_db_test
+  POSTGRES_PORT: 5432
+  REDIS_PORT: 6379
+  REDIS_HOST: redis-service
+
+
 services:
   redis-service:
     image: "redis:7.0.10-bullseye"
     networks:
       - backend-network
     volumes:
-      - "redis-volume:/data"
+      - "redis_data:/redis_data"
     ports:
       - "6379:6379"
 
@@ -47,10 +56,44 @@ services:
       - db-service
       - redis-service
     command: bash -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  test-db-service:
+    profiles:
+      - testing
+    image: postgres:15-alpine
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data/
+    ports:
+      - "5430:5432"
+    expose:
+      - 5430
+    environment: *test-variables
+    networks:
+      - backend-network
+
+  tests:
+    profiles:
+      - testing
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    environment:
+      <<: *test-variables
+      POSTGRES_HOST: test-db-service
+    ports:
+      - "8001:8000"
+    networks:
+      - backend-network
+    depends_on:
+      - test-db-service
+      - redis-service
+    command: /testing/commands/start_dev.sh
+
 networks:
   backend-network:
     driver: bridge
 
 volumes:
   postgres_data:
-  redis-volume:
+  postgres_test_data:
+  redis_data:
