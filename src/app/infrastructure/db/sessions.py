@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
 )
 
-from app.common import logger, settings
+from app.common import logger
 
 
 def async_engine(url: str) -> AsyncEngine:
