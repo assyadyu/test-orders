@@ -1,5 +1,8 @@
 import asyncio
+import string
 from os import environ
+import random
+from typing import Generator
 
 import pytest_asyncio
 from dotenv import load_dotenv
@@ -30,14 +33,14 @@ pytest_plugins = [
 ]
 
 
-@pytest_asyncio.fixture(scope='session')
-async def event_loop(request):
+@pytest_asyncio.fixture(scope="session")
+async def event_loop(request) -> Generator:
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session", loop_scope="session")
 def fake_repo():
     app.dependency_overrides[IOrderRepository] = FakeOrderRepository
     yield
@@ -49,7 +52,7 @@ def override_async_session():
     yield new_session()
 
 
-@pytest_asyncio.fixture(scope="session", autouse=False)
+@pytest_asyncio.fixture(scope="session", autouse=False, loop_scope="session")
 async def test_http_client() -> AsyncClient:
     async with AsyncClient(transport=ASGITransport(app=app), base_url='http://test') as client:
         yield client
@@ -59,7 +62,7 @@ app.dependency_overrides[async_session] = override_async_session
 app.dependency_overrides[http_client] = test_http_client
 
 
-@pytest_asyncio.fixture(autouse=False, scope="module")
+@pytest_asyncio.fixture(autouse=False, scope="class")
 async def prepare_test_db():
     logger.warning("prepare_test_db")
     logger.warning("CREATE TABLES")
@@ -73,3 +76,8 @@ async def prepare_test_db():
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await test_engine.dispose()
+
+
+async def random_string(length: int = 10) -> str:
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for _ in range(length))
