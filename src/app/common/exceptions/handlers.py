@@ -8,6 +8,7 @@ from app.common.exceptions import (
     AuthenticationException,
     NoPermissionException,
 )
+from app.common.exceptions.exceptions import RedisConnectionException
 
 
 def object_does_not_exist_exception_handler(request: Request, exc: ObjectDoesNotExistException):
@@ -26,3 +27,9 @@ def not_enough_permission_handler(request: Request, exc: NoPermissionException):
     message = exc.args[0]
     logging.error(f"URL: {request.url} MESSAGE: {message}")
     return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={"message": message})
+
+def redis_connection_error_handler(request: Request, exc: RedisConnectionException):
+    message = exc.args[0]
+    logging.error(f"URL: {request.url} MESSAGE: {message}")
+    return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"message": message})
+

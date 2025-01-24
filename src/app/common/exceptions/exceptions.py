@@ -25,3 +25,9 @@ class NoPermissionException(ApplicationBaseException):
     def __init__(self, object_id: Union[UUID, str, int]):
         msg = f"You don't have permission to perform this action with object id {object_id}"
         super().__init__(msg)
+
+
+class RedisConnectionException(ApplicationBaseException):
+    def __init__(self):
+        msg = f"Error connecting to Redis server"
+        super().__init__(msg)
