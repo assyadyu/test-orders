@@ -36,6 +36,7 @@ class FakeOrderRepository(IOrderRepository, FakeBaseRepository):
         )
         for product in data.products:
             nested_obj = ProductModel(
+                uuid=uuid.uuid4(),
                 name=product.name,
                 price=product.price,
                 quantity=product.quantity,

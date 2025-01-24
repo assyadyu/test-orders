@@ -1,4 +1,3 @@
-import uuid
 from abc import ABC, abstractmethod
 from typing import Annotated
 from uuid import UUID

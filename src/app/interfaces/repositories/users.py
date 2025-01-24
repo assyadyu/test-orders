@@ -1,7 +1,7 @@
 from abc import ABC
 
-from app.interfaces.repositories.base import IBaseRepository
+from app.infrastructure.repositories.redis.base import IRedisBaseRepository
 
 
-class IUserRepository(IBaseRepository, ABC):
+class IUserRepository(IRedisBaseRepository, ABC):
     pass
