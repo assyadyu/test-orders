@@ -1,5 +1,7 @@
 import asyncio
+import string
 from os import environ
+import random
 from typing import Generator
 
 import pytest_asyncio
@@ -60,7 +62,7 @@ app.dependency_overrides[async_session] = override_async_session
 app.dependency_overrides[http_client] = test_http_client
 
 
-@pytest_asyncio.fixture(autouse=False, scope="module", loop_scope="session")
+@pytest_asyncio.fixture(autouse=False, scope="class")
 async def prepare_test_db():
     logger.warning("prepare_test_db")
     logger.warning("CREATE TABLES")
@@ -74,3 +76,8 @@ async def prepare_test_db():
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await test_engine.dispose()
+
+
+async def random_string(length: int = 10) -> str:
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for _ in range(length))
