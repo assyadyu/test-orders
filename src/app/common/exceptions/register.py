@@ -9,7 +9,8 @@ from app.common.exceptions import (
 from app.common.exceptions.handlers import (
     object_does_not_exist_exception_handler,
     user_not_found_handler,
-    not_enough_permission_handler, redis_connection_error_handler,
+    not_enough_permission_handler,
+    redis_connection_error_handler,
 )
 
 
