@@ -19,16 +19,31 @@ class Settings(BaseSettings):
     REDIS_HOST: str = environ.get("REDIS_HOST", default="")
     REDIS_PORT: str = environ.get("REDIS_PORT", default="")
 
+    RABBITMQ_HOST: str = environ.get('RABBITMQ_HOST', default="")
+    RABBITMQ_PORT: str = environ.get('RABBITMQ_PORT', default="")
+    RABBITMQ_USER: str = environ.get('RABBITMQ_USER', default="guest")
+    RABBITMQ_PASSWORD: str = environ.get('RABBITMQ_PASSWORD', default="guest")
+    RABBITMQ_QUEUE: str = environ.get('RABBITMQ_QUEUE', default="orders")
+    RABBITMQ_ROUTE: str = environ.get('RABBITMQ_ROUTE', default="orders")
+
     @property
     def db_url(self):
-        url = "postgresql+asyncpg://{}:{}@{}:{}/{}".format(
+        return "postgresql+asyncpg://{}:{}@{}:{}/{}".format(
             self.PG_USER,
             self.PG_PASSWORD,
             self.PG_HOST,
             self.PG_PORT,
             self.PG_DB
         )  # noqa E501
-        return url
+
+    @property
+    def rabbitmq_url(self):
+        return "amqp://{}:{}@{}:{}/".format(
+            self.RABBITMQ_USER,
+            self.RABBITMQ_PASSWORD,
+            self.RABBITMQ_HOST,
+            self.RABBITMQ_PORT,
+        )
 
 
 settings = Settings(_env_file=".env", _env_file_encoding="utf-8")
