@@ -9,6 +9,9 @@ x-common-variables: &common-variables
   AUTH_URL: http://auth-service:8000/api/users
   REDIS_PORT: 6379
   REDIS_HOST: redis-service
+  RABBITMQ_USER: guest
+  RABBITMQ_PASSWORD: guest
+  RABBITMQ_HOST: rabbitmq-service
 
 x-test-variables: &test-variables
   POSTGRES_USER: db_user
@@ -17,6 +20,9 @@ x-test-variables: &test-variables
   POSTGRES_PORT: 5432
   REDIS_PORT: 6379
   REDIS_HOST: redis-service
+  RABBITMQ_USER: guest
+  RABBITMQ_PASSWORD: guest
+  RABBITMQ_HOST: rabbitmq-service
 
 
 services:
@@ -27,7 +33,7 @@ services:
     volumes:
       - "redis_data:/redis_data"
     ports:
-      - "6379:6379"
+      - "6380:6379"
 
   db-service:
     image: postgres:15-alpine
@@ -40,6 +46,18 @@ services:
     environment: *common-variables
     networks:
       - backend-network
+
+  rabbitmq-service:
+    image: rabbitmq:3.13-alpine
+    volumes:
+      - "rabbitmq_data:/var/lib/rabbitmq/data/"
+    networks:
+      - backend-network
+    hostname: rabbitmq
+    restart: always
+    environment: *common-variables
+    ports:
+      - "5671:5672"
 
   web-service:
     build: .
@@ -55,6 +73,7 @@ services:
     depends_on:
       - db-service
       - redis-service
+      - rabbitmq-service
     command: bash -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   test-db-service:
@@ -97,3 +116,4 @@ volumes:
   postgres_data:
   postgres_test_data:
   redis_data:
+  rabbitmq_data:
