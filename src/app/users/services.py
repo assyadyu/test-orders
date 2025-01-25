@@ -75,6 +75,5 @@ class AuthService(IAuthService):
             raise AuthenticationException(username=data.username)
 
         result = TokenSchema(**response.json())
-        # TODO move to queue ?
         await self.validate_token(result)
         return result

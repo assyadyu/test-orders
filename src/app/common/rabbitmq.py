@@ -15,7 +15,7 @@ async def publish_message(message: str) -> None:
         exchange = await channel.declare_exchange('direct', auto_delete=True)
         queue = await channel.declare_queue(settings.RABBITMQ_QUEUE, auto_delete=False)
         await queue.bind(exchange, settings.RABBITMQ_ROUTE)
-        res = await exchange.publish(
+        await exchange.publish(
             aio_pika.Message(body=message.encode()),
             routing_key=settings.RABBITMQ_ROUTE
         )
