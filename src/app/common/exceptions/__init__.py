@@ -3,6 +3,7 @@ from app.common.exceptions.exceptions import (
     AuthenticationException,
     NoPermissionException,
     RedisConnectionException,
+    AuthServiceNotAvailable,
 )
 
 __all__ = [
@@ -10,4 +11,5 @@ __all__ = [
     "AuthenticationException",
     "NoPermissionException",
     "RedisConnectionException",
+    "AuthServiceNotAvailable",
 ]

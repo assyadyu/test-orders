@@ -31,3 +31,9 @@ class RedisConnectionException(ApplicationBaseException):
     def __init__(self):
         msg = f"Error connecting to Redis server"
         super().__init__(msg)
+
+
+class AuthServiceNotAvailable(ApplicationBaseException):
+    def __init__(self):
+        msg = f"Auth Service Not Available"
+        super().__init__(msg)

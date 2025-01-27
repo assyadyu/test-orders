@@ -2,12 +2,16 @@ from abc import ABC, abstractmethod
 from typing import Annotated
 from uuid import UUID
 
+import httpx
 from fastapi import Depends
 from httpx import AsyncClient, Response
 
 from app.common import logger, settings
 from app.common.enums import UserRoleEnum
-from app.common.exceptions import AuthenticationException
+from app.common.exceptions import (
+    AuthenticationException,
+    AuthServiceNotAvailable,
+)
 from app.common.http import http_session
 from app.common.settings import oauth2_scheme
 from app.interfaces.repositories.users import IUserRepository
@@ -56,7 +60,10 @@ class IAuthService(ABC):
 class AuthService(IAuthService):
 
     async def request_data(self, url, payload) -> Response:
-        return await self.http_client.post(url, json=payload.dict())
+        try:
+            return await self.http_client.post(url, json=payload.dict())
+        except httpx.ReadTimeout:
+            raise AuthServiceNotAvailable
 
     async def validate_token(self, data: TokenSchema) -> None:
         logger.info("AuthService: validate_token and save to cache")
