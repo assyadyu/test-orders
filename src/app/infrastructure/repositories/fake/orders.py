@@ -86,14 +86,14 @@ class FakeOrderRepository(IOrderRepository, FakeBaseRepository):
 
     async def filter_orders(
             self,
-            limit: int,
-            offset: int,
-            status: OrderStatus,
-            min_price: Decimal,
-            max_price: Decimal,
-            min_total: Decimal,
-            max_total: Decimal,
             user: UserData,
+            limit: int = 10,
+            offset: int = 0,
+            status: OrderStatus = OrderStatus.PENDING.value,
+            min_price: Decimal|None = None,
+            max_price: Decimal|None = None,
+            min_total: Decimal|None = None,
+            max_total: Decimal|None = None,
     ) -> Sequence[OrderModel]:
         logger.info("FakeOrderRepository: Filtering orders")
         # Only by status
