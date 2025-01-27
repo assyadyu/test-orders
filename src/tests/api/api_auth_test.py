@@ -19,6 +19,10 @@ from tests.fixtures.users import (
 
 
 class TestAuthOrdersAPI:
+    """
+    E2E tests to check permissions in Orders API depending on user role performing action
+    (admin can access or change any order, regular user - only those orders that belong to them)
+    """
     BASE_URL: str = '/api/orders'
     test_http_client: AsyncClient
     repo: FakeBaseRepository = FakeBaseRepository()

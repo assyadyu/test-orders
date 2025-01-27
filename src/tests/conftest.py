@@ -58,12 +58,17 @@ async def test_http_client() -> AsyncClient:
         yield client
 
 
+# Dependency replacement effective for all tests
 app.dependency_overrides[async_session] = override_async_session
 app.dependency_overrides[http_client] = test_http_client
 
 
 @pytest_asyncio.fixture(autouse=False, scope="class")
 async def prepare_test_db():
+    """
+    For integration or e2e tests that require database connection
+    :return:
+    """
     logger.warning("prepare_test_db")
     logger.warning("CREATE TABLES")
     async with test_engine.begin() as conn:

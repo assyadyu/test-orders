@@ -11,6 +11,10 @@ from app.infrastructure.db.models import OrderModel
 
 @event.listens_for(OrderModel, 'before_update')
 def compare_old_and_new_values(mapper, connection, target):
+    """
+    ORM level signal that listens to changes of objects of OrderModel
+    Send event "StatusChanged" to RabbitMQ when if "status" field is present
+    """
     logger.info("compare_old_and_new_values")
     tracked_fields = ["status"]
 

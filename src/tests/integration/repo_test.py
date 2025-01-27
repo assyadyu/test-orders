@@ -19,6 +19,9 @@ from tests.conftest import (
 
 
 class TestFakeOrderRepository:
+    """
+    Test suite to check behavior of filtering orders of FakeOrderRepository depending on user role
+    """
     repo: FakeOrderRepository
     user: UserData
     admin: UserData
@@ -61,6 +64,9 @@ class TestFakeOrderRepository:
 
 
 class TestOrderRepository:
+    """
+    Integration tests to check some database operation with SQLAlchemy Repository
+    """
     repo: IBaseRepository
 
     async def create_order(self) -> OrderModel:

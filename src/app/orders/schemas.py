@@ -33,6 +33,10 @@ class OrderSchema(BaseSchema):
     @computed_field
     @property
     def total_price(self) -> Decimal:
+        """
+        Calculate total price of the order based on data in products list
+        :return: total price of the order
+        """
         total = 0
         if self.products:
             total = sum(product.quantity * product.price for product in self.products)

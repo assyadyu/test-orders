@@ -8,6 +8,8 @@ from app.users.schemas import TokenPayload
 from app.users.services import get_current_user
 
 
+# Change dependency to perform a test with specific role of authenticated user
+
 async def get_fake_current_user(user_uuid=str(uuid.uuid4())):
     return TokenPayload(uuid=user_uuid, username="user",
                         role=UserRoleEnum.USER.value, is_active=True)
@@ -20,14 +22,10 @@ async def get_fake_current_admin(admin_uuid=str(uuid.uuid4())):
 
 async def switch_to_user():
     app.dependency_overrides[get_current_user] = get_fake_current_user
-    # yield
-    # app.dependency_overrides[get_current_user] = get_current_user
 
 
 async def switch_to_admin():
     app.dependency_overrides[get_current_user] = get_fake_current_admin
-    # yield
-    # app.dependency_overrides[get_current_user] = get_current_user
 
 
 @pytest_asyncio.fixture(scope="module", loop_scope="session")

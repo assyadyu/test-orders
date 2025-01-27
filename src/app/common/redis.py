@@ -4,7 +4,10 @@ from app.common import settings, logger
 
 
 def redis():
-    logger.warning("redis connection")
+    """
+    Create global redis connection
+    :return:
+    """
     return aioredis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT)
 
 

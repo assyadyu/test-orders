@@ -14,6 +14,9 @@ KEY = TypeVar("KEY")
 
 
 class SQLAlchemyBaseRepository(IBaseRepository):
+    """
+    Base repository implementation for SQLAlchemy repository
+    """
     session: AsyncSession
     _MODEL: MODEL
 

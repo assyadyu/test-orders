@@ -5,8 +5,14 @@ from uuid import UUID
 
 from app.common import logger
 from app.common.enums import OrderStatus
-from app.common.exceptions import NoPermissionException, ObjectDoesNotExistException
-from app.infrastructure.db.models import OrderModel, ProductModel
+from app.common.exceptions import (
+    NoPermissionException,
+    ObjectDoesNotExistException,
+)
+from app.infrastructure.db.models import (
+    OrderModel,
+    ProductModel,
+)
 from app.infrastructure.repositories.fake.base import FakeBaseRepository
 from app.interfaces.repositories import IOrderRepository
 from app.interfaces.repositories.base import MODEL
@@ -25,9 +31,9 @@ class FakeOrderRepository(IOrderRepository, FakeBaseRepository):
             if item.uuid == upd_object.uuid:
                 self.objects[i] = upd_object
 
-    async def create_order_with_products(self, user: UserData, data: NewOrderWithProductsSchema) -> _MODEL:
+    async def create_order_with_products(self, user: UserData, data: NewOrderWithProductsSchema) -> MODEL:
         logger.info("FakeOrderRepository: Creating new order with products")
-        obj = OrderModel(
+        obj = self._MODEL(
             uuid=uuid.uuid4(),
             user_id=user.user_id,
             customer_name=data.customer_name,
@@ -49,7 +55,7 @@ class FakeOrderRepository(IOrderRepository, FakeBaseRepository):
             self,
             object_id: UUID,
             user: UserData,
-    ) -> OrderModel:
+    ) -> MODEL:
         logger.info("FakeOrderRepository: Get one order with permission check")
         exist = [obj for obj in self.objects if obj.uuid == object_id and obj.is_deleted == False]
         if not exist:
@@ -64,10 +70,10 @@ class FakeOrderRepository(IOrderRepository, FakeBaseRepository):
             object_id: UUID,
             data: UpdateOrderWithProductsSchema,
             user: UserData,
-    ) -> OrderModel:
+    ) -> MODEL:
         logger.info("FakeOrderRepository: Updating existing order with products")
         await self.get_order(object_id=object_id, user=user)
-        upd_object = OrderModel(
+        upd_object = self._MODEL(
             uuid=object_id,
             user_id=user.user_id,
             customer_name=data.customer_name,
@@ -94,7 +100,7 @@ class FakeOrderRepository(IOrderRepository, FakeBaseRepository):
             max_price: Decimal|None = None,
             min_total: Decimal|None = None,
             max_total: Decimal|None = None,
-    ) -> Sequence[OrderModel]:
+    ) -> Sequence[MODEL]:
         logger.info("FakeOrderRepository: Filtering orders")
         # Only by status
         return [obj for obj in self.objects
