@@ -1,7 +1,7 @@
 import asyncio
+import random
 import string
 from os import environ
-import random
 from typing import Generator
 
 import pytest_asyncio
