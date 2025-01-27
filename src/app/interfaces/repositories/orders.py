@@ -61,19 +61,27 @@ class IOrderRepository(IBaseRepository, ABC):
     @abstractmethod
     async def filter_orders(
             self,
-            limit: int,
-            offset: int,
-            status: OrderStatus,
-            min_price: Decimal,
-            max_price: Decimal,
-            min_total: Decimal,
-            max_total: Decimal,
             user: UserData,
+            limit: int = 10,
+            offset: int = 0,
+            status: OrderStatus = OrderStatus.PENDING.value,
+            min_price: Decimal | None = None,
+            max_price: Decimal | None = None,
+            min_total: Decimal | None = None,
+            max_total: Decimal | None = None,
     ) -> list[OrderModel]:
         """
         Filters orders according to parameters
-        :param user: authenticated user data, id and is_admin
-        :return: list of Order objects
+        :param user: authenticated user data, id and is_admin; if user is not admin,
+            only orders created by this user will be filtered
+        :param limit: maximum number of orders to return
+        :param offset: offset of orders
+        :param status: status of orders
+        :param min_price: minimum price of orders
+        :param max_price: maximum price of orders
+        :param min_total: minimum total price of orders
+        :param max_total: maximum total price of orders
+        :return: filtered list of Order objects
         """
         raise NotImplementedError
 
