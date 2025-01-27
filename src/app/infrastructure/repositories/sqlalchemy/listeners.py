@@ -31,6 +31,6 @@ def compare_old_and_new_values(mapper, connection, target):
             old_status=changes["status"][0],
             new_status=changes["status"][1],
         )
-        logger.info("new event: ", new_event.__dict__)
+        logger.info(f"new event: {new_event}")
         loop = asyncio.get_running_loop()
         loop.create_task(publish_message(json.dumps(new_event.__dict__)))
