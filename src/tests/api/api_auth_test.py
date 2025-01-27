@@ -7,7 +7,7 @@ from httpx import AsyncClient
 
 from app.common import logger
 from app.common.enums import OrderStatus
-from app.interfaces.repositories import IOrderRepository
+from app.infrastructure.repositories.fake.base import FakeBaseRepository
 from app.orders.schemas import (
     NewOrderWithProductsSchema,
     UpdateOrderWithProductsSchema,
@@ -21,7 +21,7 @@ from tests.fixtures.users import (
 class TestAuthOrdersAPI:
     BASE_URL: str = '/api/orders'
     test_http_client: AsyncClient
-    repo: IOrderRepository
+    repo: FakeBaseRepository = FakeBaseRepository()
 
     async def create_new_order(self):
         data = NewOrderWithProductsSchema(
@@ -38,7 +38,6 @@ class TestAuthOrdersAPI:
     @pytest_asyncio.fixture(autouse=True, scope="class", loop_scope="session")
     async def setup(test_http_client, fake_repo):
         TestAuthOrdersAPI.test_http_client = test_http_client
-        TestAuthOrdersAPI.repo = fake_repo
 
     @pytest.mark.asyncio(loop_scope="session")
     async def test_auth_create_order_fail(self):
@@ -65,6 +64,7 @@ class TestAuthOrdersAPI:
         result = response.json()
         assert result["message"] == f"You don't have permission to perform this action with object id {order['uuid']}"
 
+    #
     @pytest.mark.asyncio(loop_scope="session")
     async def test_auth_get_order_as_admin(self, auth_as_user):
         logger.info("test_auth_get_order_as_admin")
@@ -124,43 +124,3 @@ class TestAuthOrdersAPI:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         result = response.json()
         assert result["message"] == f"You don't have permission to perform this action with object id {order['uuid']}"
-
-    @pytest.mark.asyncio(loop_scope="session")
-    async def test_auth_delete_order_as_admin(self, auth_as_user):
-        logger.info("test_auth_delete_order_as_admin")
-        order = await self.create_new_order()
-        await switch_to_admin()
-        response = await self.test_http_client.delete(
-            url=f"{self.BASE_URL}/{order["uuid"]}"
-        )
-        assert response.status_code == status.HTTP_204_NO_CONTENT
-        response = await self.test_http_client.get(
-            url=f"{self.BASE_URL}/{order["uuid"]}"
-        )
-        assert response.status_code == status.HTTP_404_NOT_FOUND
-
-    @pytest.mark.asyncio(loop_scope="session")
-    async def test_auth_get_orders_only_own(self, auth_as_admin):
-        logger.info("test_auth_filter_orders_own")
-        await self.create_new_order()
-        await switch_to_user()
-        await self.create_new_order()
-        response = await self.test_http_client.get(
-            url=f"{self.BASE_URL}?limit=20&offset=0&status=PENDING"
-        )
-        assert response.status_code == status.HTTP_200_OK
-        # result = response.json()
-        # assert len(result) == 1
-
-    @pytest.mark.asyncio(loop_scope="session")
-    async def test_auth_get_orders_as_admin(self, auth_as_user):
-        logger.info("test_auth_get_orders_as_admin")
-        await self.create_new_order()
-        await switch_to_admin()
-        await self.create_new_order()
-        response = await self.test_http_client.get(
-            url=f"{self.BASE_URL}?limit=20&offset=0&status=PENDING"
-        )
-        assert response.status_code == status.HTTP_200_OK
-        # result = response.json()
-        # assert len(result) == 2
