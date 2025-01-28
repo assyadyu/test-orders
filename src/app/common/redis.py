@@ -1,6 +1,6 @@
 from redis import asyncio as aioredis
 
-from app.common import settings, logger
+from app.common import settings
 
 
 def redis():

@@ -16,7 +16,6 @@ from app.orders.schemas import (
     OrderFilterSchema,
     UserData,
 )
-from app.users.schemas import TokenPayload
 
 
 class IOrderService(ABC):
@@ -29,7 +28,8 @@ class IOrderService(ABC):
         self.repo = repo
 
     @abstractmethod
-    async def create_order(self, user: UserData, data: NewOrderWithProductsSchema) -> OrderSchema:
+    async def create_order(self, user: UserData, data: NewOrderWithProductsSchema) \
+            -> OrderSchema:
         """
         Create a new order from request data with authentication data
         :param user: user data from authentication service
@@ -39,7 +39,8 @@ class IOrderService(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def update_order(self, user: UserData, order_uuid: UUID, data: UpdateOrderWithProductsSchema) -> OrderSchema:
+    async def update_order(self, user: UserData, order_uuid: UUID, data: UpdateOrderWithProductsSchema) \
+            -> OrderSchema:
         """
         Update existing order from request data with authentication data, admin can update any order,
         user - only their own
@@ -53,8 +54,10 @@ class IOrderService(ABC):
     @abstractmethod
     async def get_order(self, user: UserData, order_uuid: UUID) -> OrderSchema:
         """
-        Retrieve existing order (which was not deleted, i.e. is_deleted is False)
-        :param user: user data from authentication service, admin can see any order, user - only their own
+        Retrieve existing order
+        (which was not deleted, i.e. is_deleted is False)
+        :param user: user data from authentication service,
+        admin can see any order, user - only their own
         :param order_uuid: order uuid to be retrieved
         :return: order from database (dto)
         """
@@ -63,8 +66,10 @@ class IOrderService(ABC):
     @abstractmethod
     async def filter_orders(self, user: UserData, filters: OrderFilterSchema) -> list[OrderSchema]:
         """
-        Retrieve list of orders based on filters (which were not deleted, i.e. is_deleted is False)
-        :param user: user data from authentication service, admin can see all orders, user - only their own
+        Retrieve list of orders based on filters
+        (which were not deleted, i.e. is_deleted is False)
+        :param user: user data from authentication service,
+        admin can see all orders, user - only their own
         :param filters: values for filters
         :return: list of orders corresponding to filters
         """
@@ -74,7 +79,8 @@ class IOrderService(ABC):
     async def delete_order(self, user: UserData, order_uuid: UUID):
         """
         Delete existing order by uuid
-        :param user: user data from authentication service, admin can delete any order, user - only their own
+        :param user: user data from authentication service,
+        admin can delete any order, user - only their own
         :param order_uuid: order uuid to be deleted
         :return: nothing
         """
@@ -104,7 +110,8 @@ class OrderService(IOrderService):
         new_object = await self.repo.create_order_with_products(user, data)
         return await OrderService.get_response_schema(new_object)
 
-    async def update_order(self, user: UserData, order_uuid: UUID, data: UpdateOrderWithProductsSchema) -> OrderSchema:
+    async def update_order(self, user: UserData, order_uuid: UUID, data: UpdateOrderWithProductsSchema) \
+            -> OrderSchema:
         logger.info("OrderService: update_order")
         order_logger.info(f"update_order: {user}, order_uuid {order_uuid} data: {data}")
         upd_object = await self.repo.update_order_with_products(object_id=order_uuid, data=data, user=user)

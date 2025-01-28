@@ -3,7 +3,6 @@ from decimal import Decimal
 from uuid import UUID
 
 from app.common.enums import OrderStatus
-from app.infrastructure.db.models import OrderModel
 from app.interfaces.repositories.base import IBaseRepository
 from app.interfaces.repositories.base import MODEL
 from app.orders.schemas import (

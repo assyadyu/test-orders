@@ -1,5 +1,4 @@
 import aio_pika
-from aio_pika import logger
 
 from app.common import settings, logger
 

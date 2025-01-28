@@ -57,7 +57,7 @@ class FakeOrderRepository(IOrderRepository, FakeBaseRepository):
             user: UserData,
     ) -> MODEL:
         logger.info("FakeOrderRepository: Get one order with permission check")
-        exist = [obj for obj in self.objects if obj.uuid == object_id and obj.is_deleted == False]
+        exist = [obj for obj in self.objects if obj.uuid == object_id and not obj.is_deleted]
         if not exist:
             raise ObjectDoesNotExistException(model=self._MODEL, object_id=object_id)
         obj = exist[0]
@@ -96,17 +96,17 @@ class FakeOrderRepository(IOrderRepository, FakeBaseRepository):
             limit: int = 10,
             offset: int = 0,
             status: OrderStatus = OrderStatus.PENDING.value,
-            min_price: Decimal|None = None,
-            max_price: Decimal|None = None,
-            min_total: Decimal|None = None,
-            max_total: Decimal|None = None,
+            min_price: Decimal | None = None,
+            max_price: Decimal | None = None,
+            min_total: Decimal | None = None,
+            max_total: Decimal | None = None,
     ) -> Sequence[MODEL]:
         logger.info("FakeOrderRepository: Filtering orders")
         # Only by status
         return [obj for obj in self.objects
                 if obj.status == status
-                and obj.is_deleted == False
-                and ( obj.user_id != user.user_id or user.is_admin )
+                and not obj.is_deleted
+                and (obj.user_id != user.user_id or user.is_admin) # noqa E201, E202
                 ]
 
     async def soft_delete(self, object_id: UUID, user: UserData) -> None:
