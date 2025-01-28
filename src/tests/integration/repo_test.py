@@ -17,7 +17,6 @@ from tests.conftest import (
 )
 
 
-
 class TestFakeOrderRepository:
     """
     Test suite to check behavior of filtering orders of FakeOrderRepository depending on user role

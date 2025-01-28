@@ -2,7 +2,6 @@ import uuid
 from decimal import Decimal
 
 import pytest
-from sqlalchemy.testing.pickleable import Order
 
 from app.common import logger
 from app.common.enums import OrderStatus

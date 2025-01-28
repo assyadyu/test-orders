@@ -57,7 +57,7 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
     ) -> MODEL:
         logger.info("OrderRepository: Get one order with permission check")
         stmt = sa.select(OrderModel).join(ProductModel).where(
-            not OrderModel.is_deleted,
+            OrderModel.is_deleted == False,  # noqa E712, E225
             OrderModel.uuid == object_id)
         resp = await self.session.execute(stmt)
         obj = resp.scalar()
@@ -111,7 +111,7 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
             ProductModel
         ).where(
             OrderModel.status == status,
-            not OrderModel.is_deleted
+            OrderModel.is_deleted == False  # noqa E712, E225
         )
         if not user.is_admin:
             stmt = stmt.where(
