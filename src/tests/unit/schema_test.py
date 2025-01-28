@@ -12,6 +12,10 @@ from tests.conftest import random_string
 
 
 class TestOrderSchema:
+    """
+    Unit test to validate OrderSchema property "total_price"
+    """
+
     schema: OrderSchema
 
     @pytest.mark.asyncio(loop_scope="session")

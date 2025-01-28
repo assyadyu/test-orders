@@ -17,17 +17,25 @@ class ObjectDoesNotExistException(ApplicationBaseException):
 
 class AuthenticationException(ApplicationBaseException):
     def __init__(self, username: str):
-        msg = f"Problem occurred during authentication - {username} not found or not active"
+        msg = (f"Problem occurred during authentication - "
+               f"{username} not found or not active")
         super().__init__(msg)
 
 
 class NoPermissionException(ApplicationBaseException):
     def __init__(self, object_id: Union[UUID, str, int]):
-        msg = f"You don't have permission to perform this action with object id {object_id}"
+        msg = (f"You don't have permission to perform "
+               f"this action with object id {object_id}")
         super().__init__(msg)
 
 
 class RedisConnectionException(ApplicationBaseException):
     def __init__(self):
-        msg = f"Error connecting to Redis server"
+        msg = "Error connecting to Redis server"
+        super().__init__(msg)
+
+
+class AuthServiceNotAvailable(ApplicationBaseException):
+    def __init__(self):
+        msg = "Auth Service Not Available"
         super().__init__(msg)

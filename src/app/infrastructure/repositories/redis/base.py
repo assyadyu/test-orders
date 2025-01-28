@@ -20,52 +20,72 @@ KEY = TypeVar("KEY")
 
 
 class IRedisBaseRepository(IBaseRepository, ABC):
+    """
+    Base repository interface for Redis
+    """
 
     @abstractmethod
-    async def set(self, key, obj) -> None:
+    async def set(self, key: str, obj: MODEL) -> None:
+        """
+        Add object without expiration
+        :param key: key of object to be saved
+        :param obj: object of MODEL to be saved
+        :return: nothing
+        """
         raise NotImplementedError()
 
     @abstractmethod
-    async def set_with_expiration(self, key, obj, exp_minutes: int) -> None:
+    async def set_with_expiration(self, key: str, obj: MODEL, exp_minutes: int) -> None:
+        """
+        Add object wit expiration
+        :param key: key of object to be saved
+        :param obj: object of MODEL to be saved
+        :param exp_minutes: number of minutes before expiration
+        :return: nothing
+        """
         raise NotImplementedError()
 
     @abstractmethod
-    async def get(self, key) -> Union[MODEL, None]:
+    async def get(self, key: str) -> Union[MODEL, None]:
+        """
+        Get object by key from Redis
+        :param key: key of object to be retrieved
+        :return: object of corresponding model or
+        """
         raise NotImplementedError()
 
 
 class RedisBaseRepository(IRedisBaseRepository):
+    """
+    Base repository implementation for Redis
+    """
     _MODEL: MODEL
 
     def __init__(self, *, session: async_session = Depends()):
         self.session = session
 
-    async def set(self, key, obj) -> None:
+    # IRedisBaseRepository methods implementation
+    async def set(self, key: str, obj: MODEL) -> None:
         try:
             await r.set(key, value=pickle.dumps(obj))
         except ConnectionError:
             raise RedisConnectionException()
 
-    async def set_with_expiration(self, key, obj, exp_minutes: int) -> None:
+    async def set_with_expiration(self, key: str, obj: MODEL, exp_minutes: int) -> None:
         try:
             await r.setex(key, timedelta(minutes=exp_minutes), value=pickle.dumps(obj))
         except ConnectionError:
             raise RedisConnectionException()
 
-    async def get(self, key) -> Union[MODEL, None]:
+    async def get(self, key: str) -> Union[MODEL, None]:
         try:
             data = await r.get(key)
         except ConnectionError:
             raise RedisConnectionException
         return pickle.loads(data) if data else None
 
+    # IBaseRepository Methods Implementation
     async def create(self, obj: MODEL, **kwargs) -> None:
-        """
-        Saves obj under key from kwargs
-        :param obj:
-        :param kwargs: exp - expiration time in minutes, key - key for redis
-        :return:
-        """
         if "exp" in kwargs:
             await self.set_with_expiration(kwargs["key"], obj, kwargs["exp"])
         else:

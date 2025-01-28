@@ -8,6 +8,14 @@ from app.common.redis import r as store
 
 
 def order_cache(expiration: int = None, update: bool = False, delete: bool = False):
+    """
+    Decorator that handles caching of orders
+    Doesn't comply with SRP since its logic is simple (instead of using several decorators)
+
+    :param expiration: Expiration time in seconds
+    :param update: if True, replaces existing cached order with new data
+    :param delete: if True, deletes cached order
+    """
     def wrapped(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):

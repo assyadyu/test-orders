@@ -3,6 +3,8 @@ from os import environ
 from fastapi.security import OAuth2PasswordBearer
 from pydantic_settings import BaseSettings
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
+
 
 class Settings(BaseSettings):
     DEBUG: bool = environ.get("DEBUG", default=True)
@@ -47,4 +49,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings(_env_file=".env", _env_file_encoding="utf-8")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")

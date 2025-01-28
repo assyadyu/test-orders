@@ -15,6 +15,9 @@ from app.orders.schemas import (
 
 
 class TestOrdersAPI:
+    """
+    E2E tests to check the behavior of orders API
+    """
     BASE_URL: str = '/api/orders'
     test_http_client: AsyncClient
     repo: IOrderRepository

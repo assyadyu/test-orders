@@ -80,8 +80,6 @@ services:
     profiles:
       - testing
     image: postgres:15-alpine
-    volumes:
-      - postgres_test_data:/var/lib/postgresql/data/
     ports:
       - "5430:5432"
     expose:
@@ -99,8 +97,6 @@ services:
     environment:
       <<: *test-variables
       POSTGRES_HOST: test-db-service
-    ports:
-      - "8001:8000"
     networks:
       - backend-network
     depends_on:
@@ -114,6 +110,5 @@ networks:
 
 volumes:
   postgres_data:
-  postgres_test_data:
   redis_data:
   rabbitmq_data:

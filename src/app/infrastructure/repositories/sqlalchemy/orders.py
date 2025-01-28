@@ -33,9 +33,13 @@ from app.orders.schemas import (
 class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
     _MODEL: MODEL = OrderModel
 
-    async def create_order_with_products(self, user: UserData, data: NewOrderWithProductsSchema) -> _MODEL:
+    async def create_order_with_products(self, user: UserData, data: NewOrderWithProductsSchema) -> MODEL:
         logger.info("OrderRepository: Creating new order with products")
-        obj = self._MODEL(user_id=user.user_id, customer_name=data.customer_name, status=OrderStatus.PENDING.value)
+        obj = self._MODEL(
+            user_id=user.user_id,
+            customer_name=data.customer_name,
+            status=OrderStatus.PENDING.value
+        )
         for product in data.products:
             nested_obj = ProductModel(
                 name=product.name,
@@ -50,10 +54,10 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
             self,
             object_id: UUID,
             user: UserData,
-    ) -> OrderModel:
+    ) -> MODEL:
         logger.info("OrderRepository: Get one order with permission check")
         stmt = sa.select(OrderModel).join(ProductModel).where(
-            OrderModel.is_deleted == False,
+            not OrderModel.is_deleted,
             OrderModel.uuid == object_id)
         resp = await self.session.execute(stmt)
         obj = resp.scalar()
@@ -70,7 +74,7 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
             object_id: UUID,
             data: UpdateOrderWithProductsSchema,
             user: UserData,
-    ) -> _MODEL:
+    ) -> MODEL:
         logger.info("OrderRepository: Updating existing order with products")
         upd_object = await self.get_order(object_id=object_id, user=user)
 
@@ -98,7 +102,7 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
             max_price: Decimal | None = None,
             min_total: Decimal | None = None,
             max_total: Decimal | None = None,
-    ) -> Sequence[_MODEL]:
+    ) -> Sequence[MODEL]:
         logger.info("OrderRepository: Filtering orders")
 
         stmt = sa.select(
@@ -107,7 +111,7 @@ class OrderRepository(IOrderRepository, SQLAlchemyBaseRepository):
             ProductModel
         ).where(
             OrderModel.status == status,
-            OrderModel.is_deleted == False
+            not OrderModel.is_deleted
         )
         if not user.is_admin:
             stmt = stmt.where(

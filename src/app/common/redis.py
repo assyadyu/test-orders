@@ -1,10 +1,13 @@
 from redis import asyncio as aioredis
 
-from app.common import settings, logger
+from app.common import settings
 
 
 def redis():
-    logger.warning("redis connection")
+    """
+    Create global redis connection
+    :return: Redis connection
+    """
     return aioredis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT)
 
 

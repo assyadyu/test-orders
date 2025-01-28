@@ -3,8 +3,8 @@ from decimal import Decimal
 from uuid import UUID
 
 from app.common.enums import OrderStatus
-from app.infrastructure.db.models import OrderModel
 from app.interfaces.repositories.base import IBaseRepository
+from app.interfaces.repositories.base import MODEL
 from app.orders.schemas import (
     NewOrderWithProductsSchema,
     UpdateOrderWithProductsSchema,
@@ -13,15 +13,18 @@ from app.orders.schemas import (
 
 
 class IOrderRepository(IBaseRepository, ABC):
+    """
+    Interface for order repository that reflects logic specific to orders
+    """
 
     @abstractmethod
     async def create_order_with_products(
             self,
             user: UserData,
             data: NewOrderWithProductsSchema,
-    ) -> OrderModel:
+    ) -> MODEL:
         """
-        Creates a new order with nested product objects
+        Create a new order with nested product objects
         :param data: request data with order data
         :param user: authenticated user data, id and is_admin
         :return: Order object
@@ -33,11 +36,11 @@ class IOrderRepository(IBaseRepository, ABC):
             self,
             object_id: UUID,
             user: UserData,
-    ) -> OrderModel:
+    ) -> MODEL:
         """
-        Returns order by id if it was not deleted
-        :param object_id: uuid of the order to be deleted
-        :param user: authenticated user data, id and is_admin
+        Return order by id if is_deleted = True was not set
+        :param object_id: uuid of order to retrieve
+        :param user: authenticated user data, id and is_admin, admin has access to all orders, user - only to their own
         :return: Order object
         """
         raise NotImplementedError
@@ -48,7 +51,7 @@ class IOrderRepository(IBaseRepository, ABC):
             object_id: UUID,
             data: UpdateOrderWithProductsSchema,
             user: UserData
-    ) -> OrderModel:
+    ) -> MODEL:
         """
         Replaces existing order with nested product objects
         :param object_id: uuid of order
@@ -69,7 +72,7 @@ class IOrderRepository(IBaseRepository, ABC):
             max_price: Decimal | None = None,
             min_total: Decimal | None = None,
             max_total: Decimal | None = None,
-    ) -> list[OrderModel]:
+    ) -> list[MODEL]:
         """
         Filters orders according to parameters
         :param user: authenticated user data, id and is_admin; if user is not admin,

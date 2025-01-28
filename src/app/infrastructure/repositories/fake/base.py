@@ -9,6 +9,11 @@ KEY = TypeVar("KEY")
 
 
 class FakeBaseRepository(IBaseRepository):
+    """
+    Fake repository to perform tests without accessing the database
+    Methods' implementation should simulate real repository output and reproduce exceptions
+    """
+
     _MODEL: MODEL
     objects: list[MODEL] = []
 
@@ -28,7 +33,6 @@ class FakeBaseRepository(IBaseRepository):
             raise ObjectDoesNotExistException(model=self._MODEL, object_id=object_id)  # noqa E501
 
     async def update(self, object_id: UUID, **values: Any) -> MODEL:
-        """updates specific attributes"""
         try:
             exists = await self.get_by_id(object_id)
         except ObjectDoesNotExistException:
