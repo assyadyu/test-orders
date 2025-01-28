@@ -2,9 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Annotated
 from uuid import UUID
 
-import httpx
 from fastapi import Depends
-from httpx import AsyncClient, Response
+from httpx import AsyncClient, Response, ConnectError
 
 from app.common import logger, settings
 from app.common.enums import UserRoleEnum
@@ -12,8 +11,8 @@ from app.common.exceptions import (
     AuthenticationException,
     AuthServiceNotAvailable,
 )
-from app.infrastructure.adapters.http_client import http_session
 from app.common.settings import oauth2_scheme
+from app.infrastructure.adapters.http_client import http_session
 from app.interfaces.repositories.users import IUserRepository
 from app.orders.schemas import UserData
 from app.users.schemas import (
@@ -86,7 +85,7 @@ class AuthService(IAuthService):
     async def request_data(self, url, payload) -> Response:
         try:
             return await self.http_client.post(url, json=payload.dict())
-        except httpx.ReadTimeout:
+        except ConnectError:
             raise AuthServiceNotAvailable
 
     async def validate_token(self, data: TokenSchema) -> None:
