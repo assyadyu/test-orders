@@ -1,7 +1,16 @@
 # Order Management Service - basic CRUD operations
 
+Create, update, delete orders, filter orders by status and price range 
+-- in accordance with user permissions. User role "ADMIN" allows to access 
+any order, user role "USER" limits access to only orders created by this user
+
+Additional features:
+- Upon order retrieval data is saved in cache
+- If order's status change, event with changes is sent to queue "orders"
+- Actions related to orders are saved to log file
+
 ## Software Installation
-Option 1. Manual Setup 
+### Option 1. Manual Setup 
 
 Install on the server following software:
 ```
@@ -42,7 +51,7 @@ pytest
 pytest --cov
 ```
 
-Option 2. Using Docker
+### Option 2. Using Docker
 
 Note: Build container from test-auth repo after building this one
 ```bash
